@@ -1,18 +1,42 @@
 <div class="form">
-  <input [(ngModel)]="form.title" placeholder="Task title" />
-  <input [(ngModel)]="form.description" placeholder="Description (optional)" />
+  <input
+    [(ngModel)]="form.title"
+    placeholder="Task title"
+  />
+
+  <input
+    [(ngModel)]="form.description"
+    placeholder="Description (optional)"
+  />
+
   <button (click)="add()">Add Task</button>
 </div>
 
 <ul class="task-list">
   <li *ngFor="let task of todos">
-    <div>
+    <div class="task">
       <strong>{{ task.title }}</strong>
-      <p *ngIf="task.description">{{ task.description }}</p>
-      <span>Status: {{ task.isDone ? 'Done' : 'Pending' }}</span>
-      <small>{{ task.createdAt | date:'short' }}</small>
+
+      <p *ngIf="task.description">
+        {{ task.description }}
+      </p>
+
+      <span>
+        Status: {{ task.isDone ? 'Done' : 'Pending' }}
+      </span>
+
+      <small>{{ task.createdAt | date: 'short' }}</small>
     </div>
-    <button (click)="markDone(task)" [disabled]="task.isDone">Done</button>
-    <button (click)="delete(task.id)">Delete</button>
+
+    <button
+      (click)="markDone(task)"
+      [disabled]="task.isDone"
+    >
+      Done
+    </button>
+
+    <button (click)="delete(task.id)">
+      Delete
+    </button>
   </li>
 </ul>

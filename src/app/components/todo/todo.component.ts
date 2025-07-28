@@ -1,34 +1,49 @@
 import { Component, OnInit } from '@angular/core';
 import { TodoService } from '../../services/todo.service';
 import { Todo } from '../../models/todo.model';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-todo',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './todo.component.html',
-  styleUrls: ['./todo.component.scss']
+  styleUrls: ['./todo.component.scss'],
+  providers: [DatePipe],
 })
 export class TodoComponent implements OnInit {
   todos: Todo[] = [];
-  form: Partial<Todo> = { title: '', description: '' };
+  form: Partial<Todo> = {
+    title: '',
+    description: ''
+  };
 
   constructor(private todoService: TodoService) {}
 
-  ngOnInit(): void {
-    this.todoService.fetchTodos().subscribe(t => this.todos = t);
+  ngOnInit() {
+    this.todoService.getTodos().subscribe(res => {
+      this.todos = res;
+    });
   }
 
-  add() {
-    if (!this.form.title?.trim()) return;
+  async add() {
+    const title = this.form.title?.trim();
+    if (!title) return;
 
     const todo: Todo = {
-      title: this.form.title!,
+      title,
       description: this.form.description || '',
       createdAt: Date.now(),
       isDone: false
     };
 
-    this.todoService.create(todo);
-    this.form = { title: '', description: '' };
+    try {
+      await this.todoService.add(todo);
+      this.form = { title: '', description: '' };
+    } catch (err) {
+      console.error('Error adding todo:', err);
+    }
   }
 
   markDone(todo: Todo) {
@@ -38,6 +53,6 @@ export class TodoComponent implements OnInit {
 
   delete(id?: string) {
     if (!id) return;
-    this.todoService.remove(id);
+    this.todoService.delete(id);
   }
 }

@@ -1,36 +1,30 @@
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { inject, Injectable } from '@angular/core';
+import { Firestore, collection, collectionData, query, orderBy, addDoc, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 import { Todo } from '../models/todo.model';
-import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class TodoService {
-  constructor(private afs: AngularFirestore) {}
+  private db = inject(Firestore);
 
-  fetchTodos() {
-    return this.afs
-      .collection<Todo>('todos', ref => ref.orderBy('createdAt', 'desc'))
-      .snapshotChanges()
-      .pipe(
-        map(snaps =>
-          snaps.map(snap => {
-            const data = snap.payload.doc.data();
-            const id = snap.payload.doc.id;
-            return { id, ...data } as Todo;
-          })
-        )
-      );
+  getTodos(): Observable<Todo[]> {
+    const ref = collection(this.db, 'todos');
+    const q = query(ref, orderBy('createdAt', 'desc'));
+    return collectionData(q, { idField: 'id' }) as Observable<Todo[]>;
   }
 
-  create(todo: Todo) {
-    return this.afs.collection('todos').add(todo);
+  add(todo: Todo) {
+    const ref = collection(this.db, 'todos');
+    return addDoc(ref, todo);
   }
 
-  update(id: string, updates: Partial<Todo>) {
-    return this.afs.doc(`todos/${id}`).update(updates);
+  update(id: string, data: Partial<Todo>) {
+    const ref = doc(this.db, `todos/${id}`);
+    return updateDoc(ref, data);
   }
 
-  remove(id: string) {
-    return this.afs.doc(`todos/${id}`).delete();
+  delete(id: string) {
+    const ref = doc(this.db, `todos/${id}`);
+    return deleteDoc(ref);
   }
 }
